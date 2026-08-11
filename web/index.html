@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gara Network — demo nhân nghiệp vụ mạng lưới garage</title>
+<meta name="description" content="Demo tương tác: vòng báo giá đối tác có chấm điểm nhiều tiêu chí, chuỗi bàn giao xe truy trách nhiệm, quyết toán có giữ lại bảo hành.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+<link rel="stylesheet" href="./demo.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Gara Network — nhân nghiệp vụ mạng lưới garage</h1>
+    <p>Khách gửi yêu cầu sửa xe, hệ thống gửi báo giá tới nhiều garage đối tác, chọn một garage, theo dõi bàn giao xe và quyết toán với đối tác. Trang này chạy <strong>đúng mã nguồn</strong> trong <code>src/</code> ngay trong trình duyệt.</p>
+    <div class="badges">
+      <span class="badge hl">75 test</span>
+      <span class="badge">TypeScript</span>
+      <span class="badge">Laravel + React Router 7</span>
+      <a class="badge link" id="repo-link" href="#">Mã nguồn trên GitHub →</a>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="quote">Vòng báo giá</button>
+    <button role="tab" aria-selected="false" data-tab="handover">Bàn giao xe</button>
+    <button role="tab" aria-selected="false" data-tab="settle">Quyết toán</button>
+    <button role="tab" aria-selected="false" data-tab="arch">Kiến trúc</button>
+  </nav>
+
+  <!-- ─── BÁO GIÁ ──────────────────────────────────────────── -->
+  <section class="panel active" id="tab-quote">
+    <div class="card">
+      <h2>Rẻ nhất thường không phải tốt nhất</h2>
+      <p class="hint" style="margin:0">Một garage báo rẻ hơn 15% nhưng cách xa 30km, đang quá tải, và điểm chất lượng thấp thì tổng chi phí thật cao hơn nhiều — khách chờ lâu, có khả năng phải làm lại, người điều phối tốn thời gian theo dõi. Nhưng cũng không chọn bằng cảm tính được, vì phải giải thích với khách và với garage bị loại.</p>
+    </div>
+
+    <div class="card">
+      <h2>Garage đủ điều kiện</h2>
+      <p class="hint">Ba điều kiện loại thẳng, không cho điểm bù: ngừng hoạt động, kín chỗ, không làm được hạng mục.</p>
+      <div class="scroll-x"><table id="garage-tbl"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>Chấm điểm báo giá</h2>
+      <p class="hint">Mỗi thành phần chuẩn hoá <b>tương đối trong nhóm</b> chứ không theo mốc tuyệt đối: "rẻ" chỉ có nghĩa khi so với các báo giá khác của cùng công việc.</p>
+      <label class="field">
+        <span>Mức ưu tiên của yêu cầu</span>
+        <select id="uu-tien">
+          <option value="binh_thuong">Bình thường — giá quan trọng nhất</option>
+          <option value="khan">Khẩn — thời gian quan trọng nhất</option>
+        </select>
+      </label>
+      <div id="weights-out"></div>
+      <div class="scroll-x" style="margin-top:14px"><table id="rank-tbl"></table></div>
+      <div class="note" id="pick-note"></div>
+    </div>
+
+    <div class="card">
+      <h2>Tình trạng vòng báo giá</h2>
+      <p class="hint">Cần ít nhất hai báo giá để quyết định — một báo giá đơn độc thì không so được với gì. Ngoại lệ: khi mọi garage khác đã từ chối hoặc hết hạn.</p>
+      <div id="round-out"></div>
+    </div>
+  </section>
+
+  <!-- ─── BÀN GIAO ─────────────────────────────────────────── -->
+  <section class="panel" id="tab-handover">
+    <div class="card">
+      <h2>Xe đi qua nhiều tay</h2>
+      <p class="hint" style="margin:0">Khách → điều phối → garage → điều phối → khách. Mỗi lần chuyển tay là một lần có thể phát sinh tranh chấp: vết xước này có từ trước hay mới, xăng đầy hay vơi, đồng hồ chạy thêm bao nhiêu km. Không có bằng chứng thì tranh chấp giải quyết bằng lời nói, và bên yếu thế hơn — thường là khách — chịu thiệt.</p>
+    </div>
+
+    <div class="card">
+      <h2>Chuỗi bàn giao</h2>
+      <div class="scroll-x"><table id="chain-tbl"></table></div>
+      <div id="chain-status" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Chênh lệch giữa các lần — quy trách nhiệm</h2>
+      <p class="hint">Bên chịu trách nhiệm là <b>bên nhận của lần trước</b> — tức bên đã giữ xe trong khoảng giữa hai lần bàn giao. Đây là toàn bộ giá trị của việc ghi chuỗi.</p>
+      <div class="scroll-x"><table id="diff-tbl"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>Cảnh báo</h2>
+      <label class="field">
+        <span>Ngưỡng km chạy thử hợp lý: <b id="km-label">30</b> km</span>
+        <input type="range" id="km" min="5" max="150" value="30" step="5">
+      </label>
+      <div id="warn-out"></div>
+    </div>
+
+    <div class="card">
+      <h2>Thử làm đứt chuỗi</h2>
+      <p class="hint">Bỏ một lần bàn giao và xem hệ thống phát hiện lỗ hổng — đó chính là khoảng thời gian không ai chịu trách nhiệm nếu xe hỏng.</p>
+      <label class="field">
+        <span>Bỏ lần bàn giao</span>
+        <select id="drop"></select>
+      </label>
+      <div id="gap-out"></div>
+    </div>
+  </section>
+
+  <!-- ─── QUYẾT TOÁN ───────────────────────────────────────── -->
+  <section class="panel" id="tab-settle">
+    <div class="card">
+      <h2>Không phải hạng mục nào cũng chịu thuế</h2>
+      <p class="hint">Phụ tùng có hoá đơn thì chịu VAT; công thợ ở nhiều garage nhỏ thì không. Tính thuế trên tổng là tính sai, và sai theo hướng mạng lưới trả thừa.</p>
+      <div class="scroll-x"><table id="lines-tbl"></table></div>
+      <div id="calc-out" style="margin-top:12px"></div>
+      <div class="note" id="tax-note"></div>
+    </div>
+
+    <div class="card">
+      <h2>Giữ lại tới hết bảo hành</h2>
+      <p class="hint">Trả hết ngay thì khi xe hỏng lại trong thời gian bảo hành, garage không còn động lực tài chính để quay lại sửa — và mạng lưới là bên phải chịu trách nhiệm với khách.</p>
+      <label class="field">
+        <span>Tỷ lệ giữ lại: <b id="hold-label">10%</b></span>
+        <input type="range" id="hold" min="0" max="30" value="10" step="5">
+      </label>
+      <label class="field">
+        <span>Thời gian bảo hành: <b id="warr-label">12</b> tháng</span>
+        <input type="range" id="warr" min="0" max="24" value="12" step="3">
+      </label>
+      <div id="hold-out"></div>
+    </div>
+
+    <div class="card">
+      <h2>Thử thanh toán</h2>
+      <label class="field">
+        <span>Số tiền muốn trả: <b id="pay-label">0đ</b></span>
+        <input type="range" id="pay" min="0" max="100" value="50" step="5">
+      </label>
+      <label class="field" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="after-warr" style="width:auto">
+        <span style="margin:0">Đã qua thời gian bảo hành</span>
+      </label>
+      <div id="pay-out"></div>
+    </div>
+
+    <div class="card">
+      <h2>Đối chiếu với giá đã báo khách</h2>
+      <p class="hint">Phát sinh trong lúc sửa là bình thường — mở máy ra mới thấy hết. Nhưng phát sinh phải được duyệt <b>trước</b> khi làm, chứ không xuất hiện lần đầu trên phiếu quyết toán.</p>
+      <div id="compare-out"></div>
+    </div>
+  </section>
+
+  <!-- ─── KIẾN TRÚC ────────────────────────────────────────── -->
+  <section class="panel" id="tab-arch">
+    <div class="card">
+      <h2>Vòng đời một ca sửa xe</h2>
+      <pre class="paper">khách gửi yêu cầu
+      │
+      ▼
+tổng đài liên hệ xác nhận
+      │
+      ▼
+gửi yêu cầu báo giá tới N garage đủ điều kiện
+      │
+      ├─ garage báo giá
+      ├─ garage từ chối
+      └─ quá hạn không phản hồi
+      │
+      ▼
+chấm điểm nhiều tiêu chí → chọn garage
+      │
+      ▼
+bàn giao: khách → điều phối → garage
+      │
+      ▼
+sửa chữa (phát sinh phải duyệt trước khi làm)
+      │
+      ▼
+bàn giao: garage → điều phối → khách
+      │
+      ▼
+quyết toán · trả ngay phần lớn · giữ lại tới hết bảo hành</pre>
+    </div>
+
+    <div class="card">
+      <h2>Vì sao mạng lưới, không phải một garage lớn</h2>
+      <p class="hint" style="margin:0">Mở một garage đủ năng lực làm mọi hạng mục cần vốn rất lớn và mất nhiều năm. Mạng lưới tận dụng năng lực nhàn rỗi của các garage đang có, đổi lại phải giải quyết ba bài toán mà một garage đơn lẻ không có: <b>chọn đối tác</b> cho từng ca, <b>bảo đảm chất lượng</b> khi không trực tiếp làm, và <b>giữ niềm tin của khách</b> khi xe rời khỏi tầm kiểm soát. Ba module trong repo này là câu trả lời cho ba bài toán đó.</p>
+    </div>
+
+    <div class="card">
+      <h2>Hạ tầng hệ thống thật</h2>
+      <table>
+        <tr><td><b>Backend</b></td><td>PHP 8.2 · Laravel · MySQL · 70 migration</td></tr>
+        <tr><td><b>Frontend</b></td><td>React Router 7 · TypeScript · Vite</td></tr>
+        <tr><td><b>Phân quyền</b></td><td>Vai trò × module × hành động</td></tr>
+        <tr><td><b>Quy mô</b></td><td>~40 bảng: yêu cầu · báo giá · đơn hàng · kho · quyết toán · bảo hành</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Phạm vi công khai</h2>
+      <p class="hint" style="margin:0">Repo chỉ chứa nhân nghiệp vụ: chấm điểm và chọn báo giá, kiểm tra chuỗi bàn giao, tính quyết toán và thanh toán có giữ lại. Không có mã Laravel, không có schema database, không có dữ liệu garage hay khách hàng thật. Mọi tên và số liệu hiển thị ở đây là bịa.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Đặng Tuấn Đạt · Backend / Full-stack Engineer · <a id="foot-repo" href="#">github.com/dat8103</a></p>
+    <p>Không kết nối gì, không gọi mạng. Mọi số liệu là hư cấu.</p>
+  </footer>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

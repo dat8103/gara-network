@@ -1,0 +1,59 @@
+# ── Bí mật: chặn theo nguyên tắc "cấm hết, mở từng cái" ────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+credentials/
+secrets/
+secrets*
+*service-account*.json
+*serviceaccount*.json
+client_secret*.json
+gcp-*.json
+
+# ── Dữ liệu thật: không bao giờ commit ─────────────────────────────
+*.sql
+!schema.sql
+!migrations/*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+data/real/
+uploads/
+local-input/
+local-output/
+
+# ── Build / phụ thuộc ──────────────────────────────────────────────
+node_modules/
+dist/
+dist-electron/
+build/
+out/
+.next/
+target/
+release/
+coverage/
+*.tsbuildinfo
+__pycache__/
+.venv/
+venv/
+.pytest_cache/
+.turbo/
+
+# ── Hệ điều hành / IDE ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Bundle sinh ra lúc build (GitHub Actions tự build khi deploy Pages)
+web/app.js

@@ -1,0 +1,29 @@
+{
+  "name": "gara-network-core",
+  "version": "1.0.0",
+  "description": "Nhân nghiệp vụ mạng lưới garage: vòng báo giá đối tác, chấm điểm chọn nhà cung cấp, chuỗi bàn giao xe, quyết toán có giữ lại bảo hành",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "demo": "tsx demo/demo.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild web/app.ts --bundle --format=esm --target=es2020 --minify --outfile=web/app.js",
+    "serve": "npm run build && npx --yes serve web"
+  },
+  "keywords": [
+    "marketplace",
+    "quotation",
+    "settlement",
+    "automotive",
+    "chain-of-custody"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
