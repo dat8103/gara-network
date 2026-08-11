@@ -86,7 +86,7 @@ Hai chi tiết:
 
 Mạng lưới có kho phụ tùng riêng. Khi một garage cần phụ tùng mà kho gần họ hết, hệ thống điều chuyển từ kho khác.
 
-Phần này không nằm trong repo showcase vì nó là bài toán tồn kho tiêu chuẩn, đã được trình bày kỹ hơn ở [`mini-market-pos`](https://github.com/dat8103/mini-market-pos) (quy đổi đơn vị, đặt chỗ tồn) và [`kvil-erp`](https://github.com/dat8103/kvil-erp) (MRP, đặt chỗ tất-cả-hoặc-không-gì-cả).
+Phần này không nằm trong repo showcase vì nó là bài toán tồn kho tiêu chuẩn, đã được trình bày kỹ hơn ở [`mini-market-pos`](https://github.com/dat8103/mini-market-pos) (quy đổi đơn vị, đặt chỗ tồn) và [`kvil--erp`](https://github.com/dat8103/kvil--erp) (MRP, đặt chỗ tất-cả-hoặc-không-gì-cả).
 
 ## Những gì đã không làm
 
